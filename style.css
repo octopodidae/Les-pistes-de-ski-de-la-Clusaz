@@ -1,0 +1,480 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Open Sans Condensed", sans-serif;
+  overflow: hidden;
+}
+#viewDiv,
+#webcamDiv,
+.menuPanel {
+  visibility: hidden;
+}
+#starterPage {
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
+  background-image: url("https://live.staticflickr.com/7528/15977240820_c1a00c62af_k_d.jpg"); /* https://live.staticflickr.com/651/31461050164_3fc12a3dc7_k_d.jpg */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  height: 100%;
+  z-index: 1000;
+  -webkit-animation-duration: 3s;
+  animation-duration: 3s;
+  -webkit-animation-name: zoomout;
+  animation-name: zoomout;
+}
+@-webkit-keyframes zoomout {
+  0% {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+@keyframes zoomout {
+  0% {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+#titleStarterPage {
+  text-align: center;
+  color: #fff;
+  position: relative;
+  top: 25%;
+  font-size: 2.8em;
+  font-weight: bold;
+  text-shadow: -1px 0 #000, 0 2px #000, 2px 0 #000, 0 -1px #000;
+  border-bottom: 1px solid #fff;
+  margin: 34%;
+  padding-bottom: 1%;
+}
+#descStarterPage {
+  text-align: center;
+  color: #fff;
+  position: relative;
+  top: 22%;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.svg-icon {
+  height: 32px;
+  width: 32px;
+  fill: white;
+  font-weight: bold;
+  position: relative;
+  top: 8px;
+  left: 8px;
+}
+#divShowMap {
+  text-align: center;
+  position: relative;
+  top: 27%;
+}
+#showMap {
+  padding: 10px 20px;
+  background-color: rgba(0, 150, 136, 0.5);
+  border: 1px solid #fff;
+  border-radius: 0.5em;
+  font-size: 1.3em;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+#showMap:hover {
+  background-color: rgba(0, 150, 136, 0.7);
+}
+#viewDiv {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: -1000;
+}
+
+.esri-expand {
+  left: 455px;
+  position: relative;
+}
+
+#title {
+  color: white;
+  text-transform: uppercase;
+  text-align: center;
+  position: relative;
+  font-size: 2.3em;
+  font-weight: 900;
+}
+
+h1 {
+  margin-top: 10px !important;
+  margin-bottom: 20px !important;
+}
+.section {
+  border-bottom: 1px solid rgba(100, 100, 100, 0.75);
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.menuPanel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 450px;
+  background-color: rgba(36, 36, 36, 0.8);
+  box-shadow: 0px 0px 2px 1px rgba(100, 100, 100, 0.75);
+  z-index: -10;
+  overflow-y: auto;
+}
+.tabs {
+  margin-bottom: 20px !important;
+  border-bottom: 1px solid rgba(100, 100, 100, 0.75);
+  background-color: inherit !important;
+}
+.tabs .indicator {
+  height: 5px !important;
+  background-color: rgb(0, 150, 136) !important;
+}
+.tabs .tab a {
+  font-size: 18px !important;
+  color: rgb(0, 150, 136) !important;
+  font-weight: 700 !important;
+}
+.tabs .tab a:focus,
+.tabs .tab a:focus.active {
+  background-color: transparent !important;
+}
+#tab1 .btnp {
+  height: 25px;
+  font-size: 1rem;
+  margin: 4px;
+  background-color: #242424;
+  color: #d1d1d1;
+  border: solid 1px #6c757d;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.btnp:hover {
+  background-color: #303030 !important;
+  color: white !important;
+}
+.clicked {
+  background-color: #303030 !important;
+  color: white !important;
+  border: solid 2px yellow !important;
+}
+.removeSelected {
+  background: none !important;
+  border: 1px dashed white !important;
+  border-radius: 5px;
+  color: white !important;
+  line-height: 1em !important;
+  padding: 5px !important;
+  cursor: pointer;
+  position: relative;
+  top: 10px;
+  left: 40px;
+}
+.anim-removeSelected {
+  display: inline-block;
+  animation: heartBeat;
+  animation-duration: 2s;
+}
+
+#chartdiv {
+  width: 100%;
+  height: auto;
+  background-color: rgba(36, 36, 36, 0.9);
+}
+
+.colorPicker {
+  font-size: 0.875em;
+  text-align: center;
+  display: inline-table;
+  width: 100%;
+  max-width: 40em;
+  background: #fff;
+  padding: 2px;
+  border-radius: 0.35em;
+  box-shadow: 0 0.5em 1.5em rgba(0, 0, 0, 0.15);
+}
+.colorPicker label {
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.5);
+  -webkit-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  display: table-cell;
+  cursor: pointer;
+  vertical-align: middle;
+  padding: 0;
+  text-transform: capitalize;
+  letter-spacing: -0.5em;
+  color: transparent;
+  opacity: 0.35;
+  width: 1%;
+  background-image: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(rgba(255, 255, 255, 0.1)),
+    to(rgba(0, 0, 0, 0.1))
+  );
+  background-image: linear-gradient(
+    rgba(255, 255, 255, 0.1),
+    rgba(0, 0, 0, 0.1)
+  );
+  font-size: 1rem;
+  font-weight: bold;
+}
+.colorPicker label.mygreen {
+  background-color: #00c853;
+  -webkit-tap-highlight-color: #00c853;
+}
+.colorPicker label.myblue {
+  background-color: #2196f3;
+  -webkit-tap-highlight-color: #2196f3;
+}
+.colorPicker label.myred {
+  background-color: #d50000;
+  -webkit-tap-highlight-color: #d50000;
+}
+.colorPicker label.myblack {
+  background-color: #000000;
+  -webkit-tap-highlight-color: #000000;
+}
+.colorPicker label:first-of-type {
+  border-radius: 0.25em 0 0 0.25em;
+}
+.colorPicker label:last-of-type {
+  border-radius: 0 0.25em 0.25em 0;
+}
+.colorPicker label:hover {
+  opacity: 1;
+  color: #fff;
+  letter-spacing: normal;
+}
+.colorPicker input {
+  display: none;
+}
+.colorPicker input:checked + label {
+  opacity: 1;
+  color: #fff;
+  letter-spacing: normal;
+}
+#webcamDiv {
+  left: 455px;
+  position: relative;
+  box-shadow: none !important;
+}
+.fa-webcam {
+  font-size: 16px;
+  position: relative;
+}
+.mymodal:before {
+  content: "";
+  display: none;
+  background: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+.mymodal:target:before {
+  display: block;
+}
+.mymodal:target .mymodal-dialog {
+  -webkit-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+  top: 20%;
+}
+.mymodal-dialog {
+  background: #fefefe;
+  border: #333 solid 1px;
+  border-radius: 5px;
+  margin-left: -200px;
+  position: fixed;
+  left: 50%;
+  top: -100%;
+  z-index: 20;
+  width: 758px;
+}
+.mymodal-body {
+  padding: 20px;
+  height: 530px;
+}
+.mymodal-body > iframe {
+  width: 100%;
+  height: 100%;
+}
+.close-button {
+  position: absolute;
+  background-color: rgb(178, 223, 219);
+  padding: 1.5px 7px;
+  right: 0;
+  margin-right: -10px;
+  margin-top: -9px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  color: white;
+  -webkit-box-shadow: -4px -2px 6px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: -4px -2px 6px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: -3px 1px 6px 0px rgba(0, 0, 0, 0.1);
+}
+.close-button:hover {
+  background-color: #009688;
+  color: #fff;
+}
+#tab3 iframe {
+  margin: 20px !important;
+}
+#tab2 {
+  color: white;
+  font-weight: 700;
+}
+table.highlight > tbody > tr {
+  -webkit-transition: none !important;
+  transition: none !important;
+}
+
+table#tableDetails > tbody > tr:hover {
+  background: rgba(36, 36, 36, 1) !important;
+}
+#tableDetails tr {
+  border-bottom: 1px solid white;
+}
+#enneigement1,
+#enneigement2 {
+  background-color: white;
+}
+#enneigement1 td,
+#enneigement2 td {
+  padding: 5px;
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: 200;
+  font-size: 11px;
+  color: #5f5f5f;
+}
+#bulletinNeige1 p,
+#bulletinNeige2 p {
+  text-align: left;
+  color: #009688;
+  font-family: "Source Sans Pro", sans-serif;
+}
+h6 {
+  margin: 0;
+  padding: 5px;
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  color: white;
+  text-transform: uppercase;
+  background: #009688;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: "Source Sans Pro", sans-serif;
+}
+#bulletinNeige1,
+#bulletinNeige2 {
+  width: 70%;
+  margin: auto;
+}
+#enneigement1 > tbody > tr > td:nth-child(3) {
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+}
+#enneigement2 > tbody > tr > td:nth-child(3) {
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+}
+.fa-snowflake {
+  font-size: 14px;
+  color: #009688;
+  font-weight: 500;
+}
+tbody > tr > td:nth-child(2) {
+  width: 111px;
+  height: 30px;
+}
+
+.esri-elevation-profile {
+  background-color: transparent !important;
+}
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 200ms;
+}
+
+.tooltip > div {
+  margin: 0 auto;
+  padding: 6px;
+  border-radius: 4px;
+  box-shadow: 0px 0px 4px rgba(255, 255, 255, 0.75);
+  transform: translate3d(-50%, -125%, 0);
+}
+
+button.esri-elevation-profile-legend-item__collapse-toggle.esri-button.esri-button--tertiary:focus {
+  background-color: #2ab7a9 !important;
+}
+.btnb {
+  background-color: #242424;
+  border: solid 1px #6c757d;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+  background-size: cover;
+}
+.btnb:hover {
+  background-color: #303030 !important;
+  color: white !important;
+}
+.btnb:focus {
+  background-color: #242424 !important;
+}
+#basemaps {
+  box-shadow: none !important;
+}
+#divWeather {
+  position: absolute;
+  top: 2%;
+  left: 450px;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 30%;
+  text-align: center;
+  visibility: hidden;
+}
+.btn-weather {
+  font-size: 1rem;
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+  background-color: #242424;
+  color: #adadad;
+  display: inline-block;
+  cursor: pointer;
+  text-align: center;
+  padding: 5px;
+}
+.btn-weather:hover {
+  color: rgb(237, 237, 237);
+}
+.active {
+  color: rgb(237, 237, 237);
+}

@@ -1,0 +1,1257 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Pistes de ski de la Clusaz</title>
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700" />
+  <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://js.arcgis.com/4.22/esri/themes/dark/main.css" />
+  <!-- JS Resources -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script src="https://js.arcgis.com/4.22/"></script>
+  <script>
+    function hoverLink() {
+      document.querySelector(".svg-icon").style.fill = "#009688";
+      document.querySelector("#descStarterPage > a > span").style.color = "#009688";
+    }
+
+    function outLink() {
+      document.querySelector(".svg-icon").style.fill = "#fff";
+      document.querySelector("#descStarterPage > a > span").style.color = "#fff";
+    }
+  </script>
+  <script>
+    require([
+      "esri/core/promiseUtils",
+      "esri/Map",
+      "esri/views/SceneView",
+      "esri/layers/FeatureLayer",
+      "esri/tasks/support/Query",
+      "esri/Camera",
+      "esri/geometry/Point",
+      "esri/widgets/Home",
+      "esri/widgets/ElevationProfile",
+      "esri/Graphic",
+      "esri/layers/WebTileLayer",
+      "esri/Basemap",
+      "esri/layers/support/LOD",
+      "esri/layers/support/TileInfo"
+    ], function(promiseUtils, Map, SceneView, FeatureLayer, Query, Camera, Point, Home, ElevationProfile, Graphic, WebTileLayer, Basemap, LOD, TileInfo) {
+      $(document).ready(function() {
+        window.scrollTo(0, 1);
+        // Create instance of ElevationProfile -> Global var
+        let elevationProfile = new ElevationProfile();
+        // highlight handler is used for selection over features -> Global var
+        let highlightSelect;
+        // layerView -> Global var
+        let layerView;
+        // Basemap Google
+        const tiledLayer = new WebTileLayer({
+          urlTemplate: "https://tiles.platform.fatmap.com/winter-imagery/{z}/{x}/{y}.jpg",
+          //subDomains: ["a", "b", "c", "d"]
+        });
+        const basemapGoogle = new Basemap({
+          baseLayers: [
+            tiledLayer
+          ],
+          /*referenceLayers: [
+            tiledLayer
+          ],*/
+        });
+        // Create LODs from level 0 to 31
+        const tileInfo = TileInfo.create({
+          // spatialReference,
+          numLODs: 32
+        }); /**/
+        const lods = tileInfo.lods;
+        // Create the map
+        const map = new Map({
+          basemap: basemapGoogle,
+          ground: "world-elevation"
+        });
+        // Init Camera
+        const camInit = new Camera({
+          position: {
+            latitude: 45.96854980268683,
+            longitude: 6.331903274336115,
+            z: 9096.98232810665
+          },
+          heading: 129.58,
+          tilt: 58.08,
+        })
+        // Responsive 
+        if ($(window).width() < 1024) {
+          $(".menuPanel").css("top", "60%").css("width", "100%");
+          camInit.position = {
+            latitude: 45.973109621340114,
+            longitude: 6.302103616092346,
+            z: 9096.98232810665
+          }
+        };
+        // Create the SceneView
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          qualityProfile: "high",
+          environment: {
+            atmosphere: {
+              quality: "high"
+            },
+            weather: {
+              type: "sunny",
+              cloudCover: 0
+            }
+          },
+          camera: camInit,
+          popup: {
+            autoOpenEnabled: false
+          },
+          highlightOptions: {
+            color: [255, 241, 58],
+            fillOpacity: 0.5,
+            haloOpacity: 0.5
+          },
+          constraints: {
+            lods: lods,
+            snapToZoom: false
+          } /**/
+        });
+        /* Set each unique value by category */
+        const greenSym = {
+          type: "simple-line",
+          color: "#00c853",
+          width: "2px",
+          style: "solid"
+        };
+        const blueSym = {
+          type: "simple-line",
+          color: "#2196f3",
+          width: "2px",
+          style: "solid"
+        };
+        const redSym = {
+          type: "simple-line",
+          color: "#d50000",
+          width: "2px",
+          style: "solid"
+        };
+        const blackSym = {
+          type: "simple-line",
+          color: "#000000",
+          width: "2px",
+          style: "solid"
+        };
+        const greenSymOpacity = {
+          type: "simple-line",
+          color: "rgba(0, 200, 83, 0.5)",
+          width: "2px",
+          style: "solid"
+        };
+        const blueSymOpacity = {
+          type: "simple-line",
+          color: "rgba(33, 150, 243, 0.5)",
+          width: "2px",
+          style: "solid"
+        };
+        const redSymOpacity = {
+          type: "simple-line",
+          color: "rgba(213, 0, 0, 0.5)",
+          width: "2px",
+          style: "solid"
+        };
+        const blackSymOpacity = {
+          type: "simple-line",
+          color: "rgba(0, 0, 0, 0.5)",
+          width: "2px",
+          style: "solid"
+        };
+        const greenSymSelected = {
+          type: "simple-line",
+          color: "#00c853",
+          width: "4px",
+          style: "solid"
+        };
+        const blueSymSelected = {
+          type: "simple-line",
+          color: "#2196f3",
+          width: "4px",
+          style: "solid"
+        };
+        const redSymSelected = {
+          type: "simple-line",
+          color: "#d50000",
+          width: "4px",
+          style: "solid"
+        };
+        const blackSymSelected = {
+          type: "simple-line",
+          color: "#000000",
+          width: "4px",
+          style: "solid"
+        };
+        const myRenderer = {
+          type: "unique-value",
+          field: "CATEGORIE",
+          uniqueValueInfos: [{
+              value: "V",
+              symbol: greenSym,
+              label: "V"
+            },
+            {
+              value: "B",
+              symbol: blueSym,
+              label: "B"
+            },
+            {
+              value: "R",
+              symbol: redSym,
+              label: "R"
+            },
+            {
+              value: "N",
+              symbol: blackSym,
+              label: "N"
+            }
+          ]
+        };
+        const myRendererGreen = {
+          type: "unique-value",
+          field: "CATEGORIE",
+          uniqueValueInfos: [{
+              value: "V",
+              symbol: greenSymSelected,
+              label: "V"
+            },
+            {
+              value: "B",
+              symbol: blueSymOpacity,
+              label: "B"
+            },
+            {
+              value: "R",
+              symbol: redSymOpacity,
+              label: "R"
+            },
+            {
+              value: "N",
+              symbol: blackSymOpacity,
+              label: "N"
+            }
+          ]
+        };
+        const myRendererBlue = {
+          type: "unique-value",
+          field: "CATEGORIE",
+          uniqueValueInfos: [{
+              value: "V",
+              symbol: greenSymOpacity,
+              label: "V"
+            },
+            {
+              value: "B",
+              symbol: blueSymSelected,
+              label: "B"
+            },
+            {
+              value: "R",
+              symbol: redSymOpacity,
+              label: "R"
+            },
+            {
+              value: "N",
+              symbol: blackSymOpacity,
+              label: "N"
+            }
+          ]
+        };
+        const myRendererRed = {
+          type: "unique-value",
+          field: "CATEGORIE",
+          uniqueValueInfos: [{
+              value: "V",
+              symbol: greenSymOpacity,
+              label: "V"
+            },
+            {
+              value: "B",
+              symbol: blueSymOpacity,
+              label: "B"
+            },
+            {
+              value: "R",
+              symbol: redSymSelected,
+              label: "R"
+            },
+            {
+              value: "N",
+              symbol: blackSymOpacity,
+              label: "N"
+            }
+          ]
+        };
+        const myRendererBlack = {
+          type: "unique-value",
+          field: "CATEGORIE",
+          uniqueValueInfos: [{
+              value: "V",
+              symbol: greenSymOpacity,
+              label: "V"
+            },
+            {
+              value: "B",
+              symbol: blueSymOpacity,
+              label: "B"
+            },
+            {
+              value: "R",
+              symbol: redSymOpacity,
+              label: "R"
+            },
+            {
+              value: "N",
+              symbol: blackSymSelected,
+              label: "N"
+            }
+          ]
+        };
+        // Remove UI Attribution
+        view.ui.remove("attribution");
+        // Move to top-right components navigation ui
+        view.ui.move(["zoom", "navigation-toggle", "compass"], "top-right");
+        // Home btn
+        const homeBtn = new Home({
+          view: view
+        });
+        // Add the home button to the top right corner of the view
+        view.ui.add(homeBtn, "top-right");
+        // Basemaps
+        view.ui.add("basemaps", "bottom-right");
+        // Add WebCam 
+        view.ui.add("webcamDiv", "top-left");
+        // Add featureLayert to the map
+        const featureLayer = new FeatureLayer({
+          portalItem: {
+            id: "152a54d0515a47acb4d86a932cdf22df"
+          },
+          outFields: ["*"],
+          renderer: myRenderer,
+          hazM: true,
+        });
+        // Add feature layer to map
+        map.add(featureLayer);
+        // Init tabs
+        let tabsMaterialize = $(".tabs").tabs();
+        // Consts
+        const pistesTable = [{
+            "name": "Aiglons",
+            "cat": "B"
+          },
+          {
+            "name": "Aiguille",
+            "cat": "R"
+          },
+          {
+            "name": "Airelles",
+            "cat": "R"
+          },
+          {
+            "name": "Ancolie",
+            "cat": "R"
+          },
+          {
+            "name": "Andran",
+            "cat": "R"
+          },
+          {
+            "name": "Armoises",
+            "cat": "B"
+          },
+          {
+            "name": "Baby",
+            "cat": "V"
+          },
+          {
+            "name": "Baby Bossonet",
+            "cat": "V"
+          },
+          {
+            "name": "Balme",
+            "cat": "B"
+          },
+          {
+            "name": "Bergerie",
+            "cat": "B"
+          },
+          {
+            "name": "Blanchot",
+            "cat": "R"
+          },
+          {
+            "name": "Bleuets",
+            "cat": "B"
+          },
+          {
+            "name": "Bois",
+            "cat": "R"
+          },
+          {
+            "name": "Bossonet",
+            "cat": "B"
+          },
+          {
+            "name": "Botion",
+            "cat": "R"
+          },
+          {
+            "name": "Cabeau",
+            "cat": "B"
+          },
+          {
+            "name": "Chevrette",
+            "cat": "B"
+          },
+          {
+            "name": "Choucas",
+            "cat": "N"
+          },
+          {
+            "name": "Coeur du village",
+            "cat": "V"
+          },
+          {
+            "name": "Combe des juments",
+            "cat": "R"
+          },
+          {
+            "name": "Coverie",
+            "cat": "V"
+          },
+          {
+            "name": "Crete blanche",
+            "cat": "B"
+          },
+          {
+            "name": "Crintiaux",
+            "cat": "R"
+          },
+          {
+            "name": "Crocus",
+            "cat": "B"
+          },
+          {
+            "name": "Croix Fry",
+            "cat": "B"
+          },
+          {
+            "name": "Dahu",
+            "cat": "B"
+          },
+          {
+            "name": "Ecrins",
+            "cat": "B"
+          },
+          {
+            "name": "Edelweiss",
+            "cat": "R"
+          },
+          {
+            "name": "Etoile",
+            "cat": "V"
+          },
+          {
+            "name": "Etrivaz",
+            "cat": "V"
+          },
+          {
+            "name": "Fernuy",
+            "cat": "R"
+          },
+          {
+            "name": "Framboises",
+            "cat": "B"
+          },
+          {
+            "name": "Génépis",
+            "cat": "R"
+          },
+          {
+            "name": "Genet",
+            "cat": "V"
+          },
+          {
+            "name": "Genêts",
+            "cat": "V"
+          },
+          {
+            "name": "Gentianes",
+            "cat": "B"
+          },
+          {
+            "name": "Girolles",
+            "cat": "B"
+          },
+          {
+            "name": "Grand montagne",
+            "cat": "V"
+          },
+          {
+            "name": "Guy Perillat",
+            "cat": "B"
+          },
+          {
+            "name": "Joubarbes",
+            "cat": "N"
+          },
+          {
+            "name": "Joux",
+            "cat": "B"
+          },
+          {
+            "name": "Jument 2000",
+            "cat": "B"
+          },
+          {
+            "name": "La noire",
+            "cat": "N"
+          },
+          {
+            "name": "Lachat",
+            "cat": "R"
+          },
+          {
+            "name": "Lapiaz",
+            "cat": "N"
+          },
+          {
+            "name": "Laquais",
+            "cat": "B"
+          },
+          {
+            "name": "l'Envers",
+            "cat": "V"
+          },
+          {
+            "name": "Liaison",
+            "cat": "V"
+          },
+          {
+            "name": "Liaison Merdassier",
+            "cat": "V"
+          },
+          {
+            "name": "Loup",
+            "cat": "R"
+          },
+          {
+            "name": "Louveteau",
+            "cat": "V"
+          },
+          {
+            "name": "Mélèzes",
+            "cat": "R"
+          },
+          {
+            "name": "Merle",
+            "cat": "B"
+          },
+          {
+            "name": "Motte",
+            "cat": "B"
+          },
+          {
+            "name": "Mur à Edgard",
+            "cat": "N"
+          },
+          {
+            "name": "Mur à Jules",
+            "cat": "N"
+          },
+          {
+            "name": "Mur du Bossonet",
+            "cat": "R"
+          },
+          {
+            "name": "Myrtilles",
+            "cat": "R"
+          },
+          {
+            "name": "Névé",
+            "cat": "R"
+          },
+          {
+            "name": "Plan",
+            "cat": "B"
+          },
+          {
+            "name": "Plateau",
+            "cat": "V"
+          },
+          {
+            "name": "Polailles",
+            "cat": "B"
+          },
+          {
+            "name": "Prises",
+            "cat": "B"
+          },
+          {
+            "name": "P'tit loup",
+            "cat": "V"
+          },
+          {
+            "name": "Régine Cavagnoud",
+            "cat": "R"
+          },
+          {
+            "name": "Riffroids",
+            "cat": "V"
+          },
+          {
+            "name": "Rosière",
+            "cat": "V"
+          },
+          {
+            "name": "Roualle",
+            "cat": "R"
+          },
+          {
+            "name": "Ruade",
+            "cat": "B"
+          },
+          {
+            "name": "Sapin",
+            "cat": "R"
+          },
+          {
+            "name": "Sorbier",
+            "cat": "B"
+          },
+          {
+            "name": "Sorbiers",
+            "cat": "R"
+          },
+          {
+            "name": "Stade compétition",
+            "cat": "B"
+          },
+          {
+            "name": "Tétras",
+            "cat": "N"
+          },
+          {
+            "name": "Torchère",
+            "cat": "R"
+          },
+          {
+            "name": "Var",
+            "cat": "V"
+          },
+          {
+            "name": "Vraille",
+            "cat": "N"
+          },
+          {
+            "name": "Vrailles",
+            "cat": "R"
+          }
+        ];
+        const pistesBtns = $(pistesTable);
+        const colorPickerDiv = $("#colorPickerDiv");
+        const pistesTab = $("#tab1");
+        const detailsDesc = $("#desc");
+        const tableDetails = $("#tableDetails");
+        const chartdiv = $("#chartdiv");
+        const msg = $("#msg");
+        const radioColorPicker = $(".colorPicker > input");
+        const viewDiv = $("#viewDiv");
+        const menuPanel = $(".menuPanel");
+        const showMap = $("#showMap");
+        const starterPage = $("#starterPage");
+        const btnb = $(".btnb");
+        const osm = $("#osm");
+        const google = $("#google");
+        const imagery = $("#imagery");
+        const sunnyBtn = $("#Sunny");
+        const cloudyBtn = $("#Cloudy");
+        const rainyBtn = $("#Rainy");
+        const foggyBtn = $("#Foggy");
+        const btnWeather = $(".btn-weather");
+        sunnyBtn.click(function() {
+          console.log("Sunny");
+          btnWeather.removeClass("active");
+          $(this).addClass("active");
+          view.environment.weather = {
+            type: "sunny",
+            cloudCover: 0
+          }
+        });
+        cloudyBtn.click(function() {
+          console.log("Cloudy");
+          btnWeather.removeClass("active");
+          $(this).addClass("active");
+          view.environment.weather = {
+            type: "cloudy",
+            cloudCover: 0.4
+          }
+        });
+        rainyBtn.click(function() {
+          console.log("Rainy");
+          btnWeather.removeClass("active");
+          $(this).addClass("active");
+          view.environment.weather = {
+            type: "rainy",
+            cloudCover: 0.4
+          }
+        });
+        foggyBtn.click(function() {
+          console.log("Foggy");
+          btnWeather.removeClass("active");
+          $(this).addClass("active");
+          view.environment.weather = {
+            type: "foggy",
+            cloudCover: 0.6
+          }
+        });
+        osm.click(function() {
+          btnb.removeClass("clicked");
+          $(this).addClass("clicked");
+          map.basemap = "osm";
+          //console.log("osm");
+        });
+        google.click(function() {
+          btnb.removeClass("clicked");
+          $(this).addClass("clicked");
+          map.basemap = basemapGoogle;
+          //console.log("google");
+        });
+        imagery.click(function() {
+          btnb.removeClass("clicked");
+          $(this).addClass("clicked");
+          map.basemap = "satellite";
+          //console.log("satellite");
+        });
+        // Show map
+        showMap.click(function() {
+          $("#viewDiv, #webcamDiv, .menuPanel, #divWeather").css("visibility", "visible");
+          starterPage.fadeOut(1000);
+          menuPanel.css("z-index", "5");
+          viewDiv.css("z-index", "0");
+        });
+        // Create one button for each piste
+        $.each(pistesBtns, function() {
+          let btn = $("<button>").addClass("btnp");
+          let span = $("<span>");
+          $.each(this, function(name, value) {
+            if (name === "name") {
+              span.text(value);
+              btn.attr("npiste", value);
+            }
+            if (name === "cat") {
+              btn.attr("cat", value);
+            }
+            btn.append(span);
+            colorPickerDiv.before(btn);
+          });
+        })
+        // Const btnsPistes
+        const btnsPistes = $("#tab1 .btnp");
+        // Create btn unselect and insert after btns pistes
+        const divUnselectPist = $('<button class="removeSelected" >Vider la sélection</button>');
+        btnsPistes.last().after(divUnselectPist);
+        const removeSelectedBtn = $(".removeSelected");
+        // Animate unselect btn
+        removeSelectedBtn.mouseenter(function() {
+          $(this).addClass("anim-removeSelected");
+        });
+        removeSelectedBtn.mouseleave(function() {
+          $(this).removeClass("anim-removeSelected");
+        });
+        // Remove sélection
+        removeSelectedBtn.click(function() {
+          btnsPistes.removeClass("clicked");
+          btnsPistes.css("display", "inline-block");
+          $('[type="radio"]').prop('checked', false);
+          tableDetails.empty();
+          detailsDesc.empty();
+          chartdiv.empty();
+          msg.css("display", "inline-block");
+          if (highlightSelect) {
+            highlightSelect.remove();
+          }
+          if (elevationProfile.profiles) {
+            elevationProfile.profiles._items[0].viewVisualizationEnabled = false;
+          }
+          let cam = new Camera({
+            position: {
+              latitude: 45.96854980268683,
+              longitude: 6.331903274336115,
+              z: 9096.98232810665,
+            },
+            heading: 129.58,
+            tilt: 58.08,
+            scale: 46197.737686652756
+          });
+          view.goTo(cam);
+          featureLayer.renderer = myRenderer;
+        })
+        // Populate table enneigement dans #tab3
+        $.get("https://www.laclusaz.com/meteo-pistes.html", function(response) {
+          let html = $($.parseHTML(response));
+          let altitude = html.find("div.altitude > div > span:nth-child(1)").filter("span");
+          let typeNeige = html.find("div.altitude > div > span:nth-child(2)").filter("span");
+          let enneigement = html.find("div.altitude > div > span:nth-child(3)").filter("span");;
+          let content1 = '<div id="bulletinNeige1"><h6>Bulletin neige</h6><table class="responsive-table highlight" id="enneigement1"><p>Aujourd\'hui</p>';
+          for (i = 0; i < 3; i++) {
+            content1 += '<tr>';
+            content1 += '<td>&nbsp;&nbsp;<i class="fal fa-snowflake">&nbsp;&nbsp;&nbsp;&nbsp;</i>' + altitude[i].innerHTML + '</td>';
+            content1 += '<td>' + typeNeige[i].innerHTML + '</td>';
+            content1 += '<td>' + enneigement[i].innerHTML + '</td>';
+          }
+          content1 += '</tr>';
+          content1 += "</table></div>";
+          $('#tab3').append(content1);
+          let content2 = '<div id="bulletinNeige2"><table class="responsive-table highlight" id="enneigement2"><p>Demain</p>';
+          for (i = 3; i < 6; i++) {
+            content2 += '<tr>';
+            content2 += '<td>&nbsp;&nbsp;<i class="fal fa-snowflake">&nbsp;&nbsp;&nbsp;&nbsp;</i>' + altitude[i].innerHTML + '</td>';
+            content2 += '<td>' + typeNeige[i].innerHTML + '</td>';
+            content2 += '<td>' + enneigement[i].innerHTML + '</td>';
+          }
+          content2 += '</tr>';
+          content2 += "</table></div>";
+          $('#tab3').append(content2);
+        });
+        // Bug / workaround tabsMaterialize.tabs("select", "tab2"); 
+        let liTabs = $("li.tab > a");
+        let liTabsDetails = $("li.tab:nth-child(2)");
+        liTabs.click(function() {
+          if ($(this).text() === "Détails") {
+            liTabsDetails.css("background-color", "transparent");
+          } else {
+            liTabsDetails.css("background-color", "transparent");
+          }
+        });
+        // query Piste
+        function queryPiste(layer, field, val) {
+          let query = new Query();
+          query.where = field + "=" + "'" + val + "'";
+          query.returnGeometry = true;
+          query.outSpatialReference = 4326;
+          query.returnM = true;
+          query.outFields = ["*"];
+          return layer.queryFeatures(query)
+        }
+        // Get Results
+        function getResults(response) {
+          return response.features;
+        }
+        // Get long path
+        function getLongPath(geom) {
+          return new Promise(function(resolve, reject) {
+            let longestLen = 0;
+            let longestPath;
+            if (geom.length > 0) {
+              for (let i = 0; i < geom.length; i++) {
+                if (geom[i].length > longestLen) {
+                  longestLen = geom[i].length;
+                  longestPath = geom[i];
+                }
+              }
+            }
+            resolve(longestPath);
+          });
+        }
+        // Create Desc Piste
+        function createDescPiste(piste) {
+          // Vider desc précédente et got to tab2
+          tableDetails.empty();
+          detailsDesc.empty();
+          chartdiv.empty();
+          msg.css("display", "none");
+          tabsMaterialize.tabs("select", "tab2");
+          view.goTo({
+            target: piste[0],
+            z: 9096.98232810665,
+            heading: 129.58,
+            tilt: 58.08,
+            scale: 20000
+          }, {
+            duration: 2000,
+            easing: "in-out-expo"
+          })
+          // Table + description         
+          let tr = $('<tr>');
+          let th = $('<thead>');
+          let tbody = $('<tbody>');
+          let trHead = $('<tr>');
+          trHead.append($('<th>').text("NOM_PISTE"));
+          trHead.append($('<th>').text("CATEGORIE"));
+          trHead.append($('<th>').text("ALT_HAUT"));
+          trHead.append($('<th>').text("ALT_BAS"));
+          trHead.append($('<th>').text("DENIVELEE"));
+          //trHead.append($('<th>').text("LONGUEUR"));
+          th.append(trHead);
+          $.each(piste[0].attributes, function(key, value) {
+            if (key === "DESC_PISTE") {
+              let desc = $("<p>");
+              desc.text(value);
+              detailsDesc.append(desc);
+            }
+            if (key === "NOM_PISTE") {
+              tr.append($('<td>').text(value));
+            }
+            if (key === "CATEGORIE") {
+              if (value === "V") {
+                //colorPiste = "#00c853";
+                let span = $('<span style="background-color: #00c853; width: 20px; height: 20px; border-radius: 2px; margin-top: 5px; display:inline-block">');
+                let td = $('<td>');
+                td.append(span);
+                tr.append(td)
+              }
+              if (value === "B") {
+                //colorPiste = "#2196f3";
+                let span = $('<span style="background-color: #2196f3; width: 20px; height: 20px; border-radius: 2px; margin-top: 5px; display:inline-block">');
+                let td = $('<td>');
+                td.append(span);
+                tr.append(td)
+              }
+              if (value === "R") {
+                //colorPiste = "#d50000";
+                let span = $('<span style="background-color: #d50000; width: 20px; height: 20px; border-radius: 2px; margin-top: 5px; display:inline-block">');
+                let td = $('<td>');
+                td.append(span);
+                tr.append(td)
+              }
+              if (value === "N") {
+                //colorPiste = "#000000";
+                let span = $('<span style="background-color: #000000; width: 20px; height: 20px; border-radius: 2px; margin-top: 5px; display:inline-block">');
+                let td = $('<td>');
+                td.append(span);
+                tr.append(td)
+              }
+            }
+            if (key === "ALT_BAS") {
+              tr.append($('<td>').text(value + " m"));
+            }
+            if (key === "ALT_HAUT") {
+              tr.append($('<td>').text(value + " m"));
+            }
+            if (key === "DENIVELEE") {
+              tr.append($('<td>').text(value + " m"));
+            }
+            /*if (key === "LONGUEUR") {
+              tr.append($('<td>').text(value + " m"));
+            }*/
+          });
+          tableDetails.append(th);
+          tbody.append(tr);
+          tableDetails.append(tbody);
+          // Create Profile
+          getLongPath(piste[0].geometry.paths).then(function(longestPath) {
+            if (elevationProfile) {
+              elevationProfile.input = null;
+            }
+            let polyline = {
+              type: "polyline",
+              paths: longestPath
+            };
+            let polylineGraphic = new Graphic({
+              geometry: polyline,
+            });
+            elevationProfile = new ElevationProfile({
+              view: view,
+              container: "chartdiv",
+              input: polylineGraphic,
+              visibleElements: {
+                settingsButton: false,
+                legend: true,
+                clearButton: false,
+                sketchButton: false,
+                selectButton: false,
+              },
+              profiles: [{
+                type: "ground",
+                //color: colorPiste
+              }]
+            });
+            if (elevationProfile.profiles) {
+              elevationProfile.profiles._items[0].viewVisualizationEnabled = false;
+            }
+          })
+          return piste[0]
+        }
+        // setupHoverTooltip
+        function setupHoverTooltip(layerview) {
+          let highlightTooltip;
+          const tooltip = createTooltip();
+          const hitTest = promiseUtils.debounce((event) => {
+            return view.hitTest(event)
+              .then((hit) => {
+                const results = hit.results.filter((result) => {
+                  return result.graphic.layer === featureLayer;
+                });
+                if (!results.length) {
+                  return null;
+                }
+                return {
+                  graphic: results[0].graphic,
+                  screenPoint: hit.screenPoint
+                };
+              });
+          });
+          view.on("pointer-move", (event) => {
+            return hitTest(event)
+              .then((hit) => {
+                if (highlightTooltip) {
+                  highlightTooltip.remove();
+                  highlightTooltip = null;
+                }
+                if (hit) {
+                  const graphic = hit.graphic;
+                  const screenPoint = hit.screenPoint;
+                  highlightTooltip = layerview.highlight(graphic);
+                  tooltip.show(screenPoint, graphic.attributes.NOM_PISTE);
+                } else {
+                  tooltip.hide();
+                }
+              }, () => {});
+          });
+        }
+        // createTooltip
+        function createTooltip() {
+          const tooltip = document.createElement("div");
+          const style = tooltip.style;
+          tooltip.setAttribute("role", "tooltip");
+          tooltip.classList.add("tooltip");
+          const textElement = document.createElement("div");
+          textElement.classList.add("esri-widget");
+          tooltip.appendChild(textElement);
+          view.container.appendChild(tooltip);
+          let x = 0;
+          let y = 0;
+          let targetX = 0;
+          let targetY = 0;
+          let visible = false;
+
+          function move() {
+            x += (targetX - x) * 0.1;
+            y += (targetY - y) * 0.1;
+            if (Math.abs(targetX - x) < 1 && Math.abs(targetY - y) < 1) {
+              x = targetX;
+              y = targetY;
+            } else {
+              requestAnimationFrame(move);
+            }
+            style.transform = "translate3d(" + Math.round(x) + "px," + Math.round(y) + "px, 0)";
+          }
+          return {
+            show: (point, text) => {
+              if (!visible) {
+                x = point.x;
+                y = point.y;
+              }
+              targetX = point.x;
+              targetY = point.y;
+              style.opacity = 1;
+              visible = true;
+              textElement.innerHTML = text;
+              move();
+            },
+            hide: () => {
+              style.opacity = 0;
+              visible = false;
+            }
+          };
+        }
+        // Main
+        view.when(function() {
+          view.whenLayerView(featureLayer).then(function(layerView) {
+            setupHoverTooltip(layerView);
+            // Click Difficulty (vert, bleu, rouge ou noir) and highlight corresponding pistes 
+            radioColorPicker.click(function() {
+              let cat = $(this).val();
+              // Vider desc précédente et got to tab2
+              tableDetails.empty();
+              detailsDesc.empty();
+              chartdiv.empty();
+              msg.css("display", "inline-block");
+              if (highlightSelect) {
+                highlightSelect.remove();
+              }
+              if (elevationProfile.profiles) {
+                elevationProfile.profiles._items[0].viewVisualizationEnabled = false;
+              }
+              btnsPistes.removeClass("clicked");
+              btnsPistes.each(function() {
+                if ($(this).attr("cat") !== cat) {
+                  $(this).css("display", "none");
+                } else {
+                  $(this).css("display", "inline-block");
+                }
+              })
+              let cam = new Camera({
+                position: {
+                  latitude: 45.96854980268683,
+                  longitude: 6.331903274336115,
+                  z: 9096.98232810665,
+                },
+                heading: 129.58,
+                tilt: 58.08,
+                scale: 46197.737686652756
+              });
+              view.goTo(cam);
+              queryPiste(featureLayer, "CATEGORIE", cat)
+                .then(getResults)
+                .then(function(response) {
+                  $.each(response, function(index, piste) {
+                    let attrPiste = piste.attributes;
+                    $.each(attrPiste, function(key, value) {
+                      $(function() {
+                        if (key === "CATEGORIE") {
+                          if (value === "V") {
+                            featureLayer.renderer = myRendererGreen;
+                          }
+                          if (value === "B") {
+                            featureLayer.renderer = myRendererBlue;
+                          }
+                          if (value === "R") {
+                            featureLayer.renderer = myRendererRed;
+                          }
+                          if (value === "N") {
+                            featureLayer.renderer = myRendererBlack;
+                          }
+                        }
+                      });
+                    });
+                  })
+                })
+            })
+            btnsPistes.on("click", function() {
+              let pisteClicked;
+              pisteClicked = $(this).text();
+              btnsPistes.removeClass("clicked");
+              $(this).addClass("clicked");
+              // Cas particuliers nom piste avec L'
+              if (pisteClicked === "l'Envers") {
+                pisteClicked = "l" + "''" + "Envers";
+              }
+              if (pisteClicked === "P'tit loup") {
+                pisteClicked = "P" + "''" + "tit loup";
+              }
+              queryPiste(featureLayer, "NOM_PISTE", pisteClicked)
+                .then(getResults)
+                .then(createDescPiste)
+                .then(function(piste) {
+                  if (highlightSelect) {
+                    highlightSelect.remove();
+                  }
+                  highlightSelect = layerView.highlight(piste);
+                })
+            })
+          })
+        })
+      })
+    })
+  </script>
+</head>
+
+<body>
+  <div id="starterPage">
+    <h1 id="titleStarterPage">Les pistes de ski de la Clusaz</h1>
+    <p id="descStarterPage">Une application web développée avec l'<a href="https://developers.arcgis.com/javascript/" target="_blank" style="text-decoration: none; color: white;" onmouseover="hoverLink()" onmouseout="outLink()"><span>API
+          ArcGIS for
+          JavaScript<svg class="svg-icon" viewBox="0 0 48 53">
+            <path d="M24.16 2.12L46 8v33.66l-22.14 9.23L2 45V11.9l22.16-9.78M24 0L0 10.6v35.92L24 53l24-10V6.48L24 0zM9 11v30h30V11zm16.33 23.4c0 2.92-1.72 4.25-4.21 4.25a4.37 4.37 0 0 1-4.23-2.58l2.29-1.39c.45.79.85 1.45 1.82 1.45s1.51-.36 1.51-1.77v-9.59h2.82zM32 38.65a5.4 5.4 0 0 1-5.13-2.88l2.29-1.33a3.07 3.07 0 0 0 2.78 1.71c1.17 0 1.91-.58 1.91-1.39 0-1-.76-1.31-2.05-1.87l-.7-.3c-2-.87-3.39-2-3.39-4.25 0-2.12 1.61-3.73 4.13-3.73a4.18 4.18 0 0 1 4 2.26l-2.2 1.41a1.91 1.91 0 0 0-1.81-1.21 1.23 1.23 0 0 0-1.35 1.21c0 .84.53 1.18 1.73 1.71l.71.3c2.39 1 3.74 2.07 3.74 4.43 0 2.54-1.99 3.93-4.66 3.93z">
+            </path>
+          </svg></span></a></p>
+    <div id="divShowMap"><button id="showMap">Afficher la carte</button></div>
+  </div>
+  <div id="viewDiv"></div>
+  <a href="#webcam">
+    <div id="webcamDiv">
+      <div class="esri-component esri-widget--button esri-widget" role="button" tabindex="0" aria-label="Webcam" title="Webcam"><i class="fal fa-webcam"></i>
+        <span aria-hidden="true" class="esri-icon"></span><span class="esri-icon-font-fallback-text"></span>
+      </div>
+  </a>
+  </div>
+  <div class="mymodal" id="webcam" aria-hidden="true">
+    <div class="mymodal-dialog">
+      <div class="mymodal-header">
+        <a href="#" class="close-button" aria-hidden="true">&#10006;</a>
+      </div>
+      <div class="mymodal-body">
+        <iframe src="https://m.webcam-hd.com/la-clusaz/la-bergerie?autoplay=1" frameborder="0" allow="autoplay" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="menuPanel">
+    <div class="row" style="margin-bottom: 0; background-color: rgb(0, 150, 136);">
+      <div class="col s12 section">
+        <h1 id="title">Pistes de ski de la Clusaz<h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12" style="padding: 0;">
+        <ul class="tabs">
+          <li class="tab col s4"><a href="#tab1" class="active">Pistes</a></li>
+          <li class="tab col s4"><a href="#tab2">Détails</a></li>
+          <!-- http://www.ski-aravis.com/la-clusaz-pistes.html -->
+          <!-- http://www.ski-aravis.com/manigod-pistes.html -->
+          <li class="tab col s4"><a href="#tab3">Météo</a></li>
+        </ul>
+      </div>
+      <!--  tab1 -->
+      <div id="tab1" class="col s12">
+        <!--  colorPicker -->
+        <div style="display: table; width: 100%; height: 100%;" id="colorPickerDiv">
+          <div style="text-align: center; display: table-cell; vertical-align: middle; padding: 1em; background: #f5f5f5; font-weight: 200; background: transparent; font-size: 1rem;">
+            <p style="text-transform: uppercase; font-weight: bold; color: white;">Difficulté selon la couleur de la piste
+            </p>
+            <div class="colorPicker">
+              <input class="mygreen" type="radio" name="hat-color" value="V" id="hat-color-mygreen" />
+              <label class="mygreen" for="hat-color-mygreen">Vert</label>
+              <input class="myblue" type="radio" name="hat-color" value="B" id="hat-color-myblue" />
+              <label class="myblue" for="hat-color-myblue">Bleu</label>
+              <input class="myred" type="radio" name="hat-color" value="R" id="hat-color-myred" />
+              <label class="myred" for="hat-color-myred">Rouge</label>
+              <input class="myblack" type="radio" name="hat-color" value="N" id="hat-color-myblack" />
+              <label class="myblack" for="hat-color-myblack">Noir</label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!--  tab2 -->
+      <div id="tab2" class="col s12">
+        <table id="tableDetails" class="highlight responsive-table"></table>
+        <p id="msg">Vous devez cliquer sur une piste dans l'onglet pistes pour afficher les détails</p>
+        <p id="desc"></p>
+        <div id="chartdiv"></div>
+      </div>
+      <!--  tab3 -->
+      <div id="tab3" class="col s12 center">
+        <iframe id="widget_autocomplete_preview" width="300" height="150" frameborder="0" scrolling="no" src="https://meteofrance.com/widget/prevision/740802##009688"> </iframe>
+        <iframe id="widget_autocomplete_preview" width="300" height="150" frameborder="0" scrolling="no" src="https://meteofrance.com/widget/prevision/740800##009688"> </iframe>
+      </div>
+    </div>
+  </div>
+  <div id="basemaps">
+    <button class="btnb clicked" id="google" style="background-image: url('https://assets.codepen.io/1357561/Hiver.JPG');"></button>
+    <button class="btnb" id="imagery" style="background-image: url('https://assets.codepen.io/1357561/Ete.JPG?fit=pad');"></button>
+    <button class="btnb" id="osm" style="background-image: url('https://assets.codepen.io/1357561/osm.JPG?fit=pad');"></button>
+  </div>
+  <div id="divWeather">
+    <div class="btn-weather active" id="Sunny">Ensoleillée</div>
+    <div class="btn-weather" id="Cloudy">Nuageux</div>
+    <div class="btn-weather" id="Rainy">Pluvieux</div>
+    <div class="btn-weather" id="Foggy">Brumeux</div>
+  </div>
+</body>
+
+</html>
